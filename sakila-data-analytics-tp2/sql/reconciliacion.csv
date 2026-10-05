@@ -1,0 +1,17 @@
+tabla,filas_origen,filas_sql_server,diferencia
+alquiler,16044,16044,0
+pelicula,1000,1000,0
+cliente,599,599,0
+inventario,4581,4581,0
+categoria,16,16,0
+pelicula_categoria,1000,1000,0
+pago,16049,16044,-5
+empleado,2,2,0
+tienda,2,2,0
+direccion,603,603,0
+ciudad,600,600,0
+pais,109,109,0
+actor,200,200,0
+pelicula_actor,5462,5462,0
+pelicula_texto,1000,1000,0
+idioma,6,6,0
