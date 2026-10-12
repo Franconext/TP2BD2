@@ -110,11 +110,30 @@ def extraer_alquileres(motor, desde: datetime) -> pd.DataFrame:
     return df
 
 
-def extraer_multas(ruta: Path = ARCHIVO_MULTAS) -> pd.DataFrame:
-    """Origen 2: archivo plano construido por el equipo."""
+def extraer_multas(ruta: Path = ARCHIVO_MULTAS, alquileres: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Lee el CSV; si falta, lo crea con categorías reales y una tarifa de ejemplo."""
+    ruta = Path(ruta)
+    if not ruta.is_file():
+        if alquileres is None or alquileres.empty:
+            raise FileNotFoundError(f"No existe el CSV complementario: {ruta}")
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        categorias = alquileres["category"].dropna().astype(str).drop_duplicates().sort_values()
+        if categorias.empty:
+            raise ValueError("No hay categorías para generar el CSV")
+        pd.DataFrame({"categoria": categorias.to_numpy(),
+                      "multa_por_dia_usd": MULTA_POR_DEFECTO}).to_csv(
+                          ruta, index=False, encoding="utf-8")
+        log.warning("Se creó %s con tarifa de EJEMPLO %.2f USD/día; revisarla antes de entregar",
+                    ruta, MULTA_POR_DEFECTO)
     df = pd.read_csv(ruta, encoding="utf-8")
-    if df["categoria"].duplicated().any():
-        raise ValueError(f"{ruta.name}: hay categorías repetidas; el merge duplicaría filas")
+    necesarias = {"categoria", "multa_por_dia_usd"}
+    if not necesarias.issubset(df.columns):
+        raise ValueError(f"{ruta.name}: faltan columnas {sorted(necesarias - set(df.columns))}")
+    if df["categoria"].isna().any() or df["categoria"].duplicated().any():
+        raise ValueError(f"{ruta.name}: categorías vacías o repetidas")
+    df["multa_por_dia_usd"] = pd.to_numeric(df["multa_por_dia_usd"], errors="coerce")
+    if df["multa_por_dia_usd"].isna().any() or (df["multa_por_dia_usd"] < 0).any():
+        raise ValueError(f"{ruta.name}: multas inválidas")
     return df
 
 
@@ -275,7 +294,7 @@ def ejecutar_pipeline(desde: str = DESDE_POR_DEFECTO, nombre_tabla: str = TABLA_
 
         log.info("[EXTRAER] inicio")
         alquileres = extraer_alquileres(motor, fecha_desde)
-        multas = extraer_multas(archivo_multas)
+        multas = extraer_multas(archivo_multas, alquileres)
         log.info("[EXTRAER] fin | alquileres=%d | categorías en archivo plano=%d",
                  len(alquileres), len(multas))
 

@@ -1,0 +1,81 @@
+2026-10-12 16:09:26,037 | INFO    | === Inicio del pipeline ===
+2026-10-12 16:09:26,095 | INFO    | [EXTRAER] inicio
+2026-10-12 16:10:10,745 | ERROR   | El pipeline falló
+Traceback (most recent call last):
+  File "c:\Users\franc\OneDrive\Escritorio\TP2BD2\sakila-data-analytics-tp2\pipeline\pipeline_tp2.py", line 278, in ejecutar_pipeline
+    multas = extraer_multas(archivo_multas)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\franc\OneDrive\Escritorio\TP2BD2\sakila-data-analytics-tp2\pipeline\pipeline_tp2.py", line 115, in extraer_multas
+    df = pd.read_csv(ruta, encoding="utf-8")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 872, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 300, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 1643, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 1907, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\common.py", line 939, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\franc\\OneDrive\\Escritorio\\TP2BD2\\sakila-data-analytics-tp2\\pipeline\\datos\\multas_por_categoria.csv'
+2026-10-12 16:15:44,861 | INFO    | === Inicio del pipeline ===
+2026-10-12 16:15:44,896 | INFO    | [EXTRAER] inicio
+2026-10-12 16:16:29,708 | ERROR   | El pipeline falló
+Traceback (most recent call last):
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\sakila-data-analytics-tp2\pipeline\pipeline_tp2.py", line 278, in ejecutar_pipeline
+    multas = extraer_multas(archivo_multas)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\sakila-data-analytics-tp2\pipeline\pipeline_tp2.py", line 115, in extraer_multas
+    df = pd.read_csv(ruta, encoding="utf-8")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 872, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 300, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 1643, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\parsers\readers.py", line 1907, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "C:\Users\franc\OneDrive\Escritorio\TP2BD2\venv_tp2\Lib\site-packages\pandas\io\common.py", line 939, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\franc\\OneDrive\\Escritorio\\TP2BD2\\sakila-data-analytics-tp2\\pipeline\\datos\\multas_por_categoria.csv'
+2026-10-12 16:36:22,762 | INFO    | === Inicio del pipeline ===
+2026-10-12 16:36:22,813 | INFO    | [EXTRAER] inicio
+2026-10-12 16:37:07,737 | WARNING | Se creó C:\Users\franc\OneDrive\Escritorio\TP2BD2\sakila-data-analytics-tp2\pipeline\datos\multas_por_categoria.csv con tarifa de EJEMPLO 0.75 USD/día; revisarla antes de entregar
+2026-10-12 16:37:07,748 | INFO    | [EXTRAER] fin | alquileres=16044 | categorías en archivo plano=16
+2026-10-12 16:37:07,749 | INFO    | [TRANSFORMAR] inicio
+2026-10-12 16:37:07,751 | INFO    | Duplicados por rental_id eliminados: 0
+2026-10-12 16:37:07,755 | INFO    | Reglas de negocio violadas | devolución anterior al alquiler: 0 | plazo fuera de [1, 30]: 0 | costo de reposición <= 0: 0
+2026-10-12 16:37:07,760 | INFO    | Filas apartadas por reglas de negocio: 0
+2026-10-12 16:37:07,761 | INFO    | Fecha de corte (último evento registrado): 2006-02-14 15:16:03
+2026-10-12 16:37:07,791 | INFO    | Alquileres sin devolución (censurados): 183
+2026-10-12 16:37:07,822 | INFO    | [TRANSFORMAR] fin | clientes=599
+2026-10-12 16:37:07,822 | INFO    | [CARGAR] inicio | destino=TP2_MorosidadPorCliente
+2026-10-12 16:37:08,176 | INFO    | [CARGAR] fin | filas cargadas=599 | filas en la tabla destino=599
+2026-10-12 16:37:08,176 | INFO    | === Pipeline finalizado correctamente ===
+2026-10-12 16:37:34,944 | INFO    | === Inicio del pipeline ===
+2026-10-12 16:37:34,982 | INFO    | [EXTRAER] inicio
+2026-10-12 16:38:59,756 | INFO    | === Inicio del pipeline ===
+2026-10-12 16:38:59,811 | INFO    | [EXTRAER] inicio
+2026-10-12 16:39:45,032 | INFO    | [EXTRAER] fin | alquileres=16044 | categorías en archivo plano=16
+2026-10-12 16:39:45,033 | INFO    | [TRANSFORMAR] inicio
+2026-10-12 16:39:45,036 | INFO    | Duplicados por rental_id eliminados: 0
+2026-10-12 16:39:45,039 | INFO    | Reglas de negocio violadas | devolución anterior al alquiler: 0 | plazo fuera de [1, 30]: 0 | costo de reposición <= 0: 0
+2026-10-12 16:39:45,047 | INFO    | Filas apartadas por reglas de negocio: 0
+2026-10-12 16:39:45,049 | INFO    | Fecha de corte (último evento registrado): 2006-02-14 15:16:03
+2026-10-12 16:39:45,080 | INFO    | Alquileres sin devolución (censurados): 183
+2026-10-12 16:39:45,111 | INFO    | [TRANSFORMAR] fin | clientes=599
+2026-10-12 16:39:45,112 | INFO    | [CARGAR] inicio | destino=TP2_MorosidadPorCliente
+2026-10-12 16:39:45,521 | INFO    | [CARGAR] fin | filas cargadas=599 | filas en la tabla destino=599
+2026-10-12 16:39:45,523 | INFO    | === Pipeline finalizado correctamente ===
