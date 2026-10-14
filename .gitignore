@@ -1,3 +1,6 @@
 /graficos/
 /venv_tp2/
 /requirements.txt
+venv_tp2/
+graficos/
+.requirements.txt
