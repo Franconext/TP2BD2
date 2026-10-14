@@ -1,225 +1,339 @@
 # TP2 · Equipo 04 — Morosidad y devoluciones fuera de término
 
-Seminario de Actualización 2026 · Sakila migrada a SQL Server + Python (pandas, SQLAlchemy, matplotlib, seaborn)
+**Seminario de Actualización · Unidad 5: Data Analytics e Ingeniería de Datos · 2026**
 
-**Variante 4.** Pregunta de negocio: *¿cuánto se demoran los clientes en devolver las películas y cuánto expone eso al negocio? ¿Qué perfil tiene el cliente moroso?*
+> **Variante 4 — Morosidad y devoluciones fuera de término**  
+> **Pregunta de negocio:** ¿Cuánto se demoran los clientes en devolver las películas y cuánto expone eso al negocio? ¿Qué perfil tiene el cliente moroso?
 
-**Integrantes:** _completar_
+## Equipo académico
+
+| Rol | Nombre y apellido |
+|---|---|
+| **Docente** | **Jorge Insfrán** |
+| Alumno | **Lucas Valenzuela** |
+| Alumno | **Franco Amendolara** |
+| Alumno | **Diego Insua** |
+
+**Institución:** Instituto Superior Nuestra Señora de Luján del Buen Viaje.  
+**Repositorio:** [Franconext/TP2BD2](https://github.com/Franconext/TP2BD2)
+
+### Organización del trabajo
+
+| Actividad | Responsable principal | Alcance |
+|---|---|---|
+| 1 y 2 | Lucas Valenzuela | Integración SQL–Python y diagnóstico de calidad |
+| 3 | Diego Insua | Indicadores, visualizaciones y hallazgos |
+| 4 | Franco Amendolara | Pipeline ETL, carga y validaciones |
+| 0 y documentación | Equipo completo | Reconciliación, revisión y documentación |
+
+> **Trabajo colaborativo:** las responsabilidades indican quién lideró cada actividad, pero **todos los integrantes participaron en consultas, pruebas, revisión de código y resolución de problemas**, con el objetivo de comprender el proyecto completo. Los commits se centralizaron mediante la cuenta de GitHub de Franco Amendolara (`Franconext`); esa autoría de Git no representa una autoría individual de todas las actividades.
 
 ---
 
-## 1. Qué hace este proyecto
+## 1. Resumen del proyecto
 
-Toma la base **Sakila** (videoclub) ya migrada a SQL Server y responde la pregunta de negocio en cinco pasos:
+El proyecto utiliza la base **Sakila**, migrada a **SQL Server**, y un flujo de análisis en **Python** para estudiar los alquileres de un videoclub. El trabajo aborda el atraso en las devoluciones, el comportamiento de los clientes y la exposición económica por películas no devueltas.
 
-| Paso | Qué se hace | Dónde está |
+| Etapa | Objetivo | Entregable |
 |---|---|---|
-| Actividad 0 | Reconciliar la base migrada contra el volcado original (conteo de filas por tabla) | `generar_reconciliacion.py` → `sql/reconciliacion.csv` |
-| Actividad 1 | Integrar SQL y Python: extraer el conjunto de trabajo con una consulta parametrizada y comparar una misma métrica calculada en T-SQL y en pandas | `notebooks/analisis.ipynb` |
-| Actividad 2 | Perfilar los datos y diagnosticar su calidad (nulos, duplicados, fechas imposibles, atípicos) | `notebooks/analisis.ipynb` |
-| Actividad 3 | Calcular el atraso, comparar categorías y clientes, y comunicar hallazgos con gráficos | `notebooks/analisis.ipynb` → `graficos/` |
-| Actividad 4 | Pipeline ETL repetible que carga el resultado por cliente en SQL Server | `pipeline/pipeline_tp2.py` → tabla `TP2_MorosidadPorCliente` |
+| **Actividad 0** | Reconciliar el esquema migrado y centralizar nombres de tablas y columnas | `esquema.py`, `sql/reconciliacion.csv` |
+| **Actividad 1** | Integrar SQL Server con Python y contrastar métricas | Notebook de análisis y consulta SQL |
+| **Actividad 2** | Perfilar nulos, duplicados, reglas de negocio y outliers | Diagnóstico de calidad |
+| **Actividad 3** | Calcular indicadores y comunicar tres hallazgos | Notebook y gráficos PNG |
+| **Actividad 4** | Ejecutar un ETL repetible e idempotente | `pipeline/pipeline_tp2.py` y tabla `TP2_MorosidadPorCliente` |
+
+### Tecnologías
+
+**SQL Server · T-SQL · Python 3.11+ · pandas · NumPy · SQLAlchemy · pyodbc · matplotlib · seaborn · Jupyter / VS Code**
 
 ---
 
 ## 2. Estructura del repositorio
 
-```
+```text
 TP2BD2/
 ├── README.md
-├── requirements.txt                  # dependencias (pip freeze del entorno virtual)
+├── requirements.txt
 ├── .gitignore
-└── sakila-data-analytics-tp2/        # todo el código se ejecuta desde acá
-    ├── config_conexion.py            # crea el engine de SQLAlchemy (sin credenciales)
-    ├── esquema.py                    # diccionario de nombres: canónico (Sakila) -> nombre real en SQL Server
-    ├── probar_conexion.py            # verifica la conexión
-    ├── generar_reconciliacion.py     # Actividad 0
+└── sakila-data-analytics-tp2/
+    ├── config_conexion.py
+    ├── esquema.py
+    ├── probar_conexion.py
+    ├── generar_reconciliacion.py
     ├── sql/
-    │   ├── conjunto_trabajo.sql      # el conjunto de trabajo, escrito en T-SQL (referencia)
-    │   └── reconciliacion.csv        # resultado de la Actividad 0
+    │   ├── conjunto_trabajo.sql
+    │   └── reconciliacion.csv
     ├── notebooks/
-    │   ├── analisis.ipynb            # Actividades 0 a 3
-    │   └── actividad_1.py … actividad_3.py   # versiones iniciales en script
+    │   ├── analisis.ipynb
+    │   ├── actividad_1.py
+    │   ├── actividad_2.py
+    │   └── actividad_3.py
     ├── pipeline/
-    │   ├── pipeline_tp2.py           # Actividad 4
-    │   ├── datos/multas_por_categoria.csv    # archivo plano complementario
-    │   └── logs/pipeline_tp2.log     # registro de las ejecuciones
-    └── graficos/                     # PNG exportados por el notebook (150 dpi)
+    │   ├── pipeline_tp2.py
+    │   ├── datos/
+    │   │   └── multas_por_categoria.csv
+    │   └── logs/
+    │       └── pipeline_tp2.log
+    └── graficos/
+        ├── grafico_1_boxplot.png
+        ├── grafico_2_narrativo.png
+        └── grafico_3_distribucion_morosidad.png
 ```
 
+> La estructura anterior describe la organización documentada del proyecto. Las carpetas de datos y logs deben existir en el entorno de ejecución; los archivos de logs se generan al correr el pipeline.
+
 ---
 
-## 3. Requisitos
+## 3. Requisitos e instalación
 
-- Windows con **SQL Server** (el proyecto se probó con una instancia `localhost\SQLEXPRESS`) y la base **Sakila migrada**.
-- **ODBC Driver 17 for SQL Server** instalado en la máquina cliente.
+- Windows con acceso a una instancia de **SQL Server** que contenga la base Sakila migrada.
 - **Python 3.11** o superior.
-- Librerías principales: `pandas`, `SQLAlchemy`, `pyodbc`, `matplotlib`, `seaborn`, `numpy` (versiones exactas en `requirements.txt`).
+- **ODBC Driver 17 for SQL Server** (configuración documentada; otro driver requiere ajustar la conexión).
+- Dependencias Python incluidas en `requirements.txt`.
 
-**Controlador elegido: `pyodbc` (a través de SQLAlchemy).** Es el controlador sobre el que SQLAlchemy arma la conexión a SQL Server y el enfoque que recomienda el apunte de la Unidad 5 para trabajar con pandas (`read_sql` / `to_sql`).
+Desde la raíz del repositorio, crear y activar el entorno virtual:
 
----
+**PowerShell**
 
-## 4. Instalación
-
-Desde la raíz del repositorio:
-
-```bash
+```powershell
 python -m venv venv_tp2
-venv_tp2\Scripts\activate.bat          # Windows CMD   (PowerShell: venv_tp2\Scripts\Activate.ps1)
+.\venv_tp2\Scripts\Activate.ps1
 pip install -r requirements.txt
 cd sakila-data-analytics-tp2
 ```
 
-> Todos los comandos siguientes se ejecutan desde la carpeta `sakila-data-analytics-tp2/`, con el entorno virtual activado.
+**CMD**
+
+```bat
+python -m venv venv_tp2
+venv_tp2\Scripts\activate.bat
+pip install -r requirements.txt
+cd sakila-data-analytics-tp2
+```
+
+> Los comandos de las siguientes secciones se ejecutan desde `sakila-data-analytics-tp2/` y con el entorno virtual activo.
 
 ---
 
-## 5. Conexión a la base (sin credenciales en el código)
+## 4. Configuración de la base de datos
 
-`config_conexion.py` usa **Autenticación Integrada de Windows** (`Trusted_Connection=yes`): no hay usuario ni contraseña escritos en ningún archivo. Los datos de conexión se pueden cambiar con variables de entorno:
+`config_conexion.py` utiliza **Autenticación Integrada de Windows** (`Trusted_Connection=yes`), sin guardar usuario ni contraseña en el código.
 
-| Variable | Valor por defecto | Para qué sirve |
+| Variable | Valor predeterminado | Descripción |
 |---|---|---|
-| `DB_SERVER` | `localhost\SQLEXPRESS` | Servidor / instancia |
-| `DB_NAME` | `sakila` | Nombre de la base migrada |
-| `DB_DRIVER` | `ODBC Driver 17 for SQL Server` | Controlador ODBC |
+| `DB_SERVER` | `localhost\SQLEXPRESS` | Servidor e instancia SQL Server |
+| `DB_NAME` | `sakila` | Base migrada |
+| `DB_DRIVER` | `ODBC Driver 17 for SQL Server` | Driver ODBC |
 
-```bash
+Ejemplo en **PowerShell**:
+
+```powershell
+$env:DB_SERVER = 'localhost\SQLEXPRESS'
+$env:DB_NAME = 'sakila'
+python probar_conexion.py
+```
+
+Ejemplo en **CMD**:
+
+```bat
 set DB_SERVER=localhost\SQLEXPRESS
 set DB_NAME=sakila
 python probar_conexion.py
 ```
 
-> Si la máquina solo tiene el **ODBC Driver 18**, la conexión cifrada es obligatoria por defecto: hay que agregar `Encrypt` y `TrustServerCertificate` a la cadena de conexión en `config_conexion.py`.
+Si solo está instalado **ODBC Driver 18**, puede ser necesario ajustar los parámetros de cifrado y validación del certificado en la cadena de conexión, según la configuración del servidor.
 
 ---
 
-## 6. Cómo ejecutar cada parte
+## 5. Ejecución por actividad
 
-### Actividad 0 · Reconciliación
-```bash
-python generar_reconciliacion.py       # imprime la tabla y la guarda en sql/reconciliacion.csv
+### Actividad 0 — Reconciliación
+
+```powershell
+python generar_reconciliacion.py
 ```
-Compara la cantidad de filas de cada tabla en SQL Server contra la del volcado original de Sakila.
 
-### Actividades 1 a 3 · Notebook
-Abrir `notebooks/analisis.ipynb` en VS Code o JupyterLab con el kernel del entorno `venv_tp2` y ejecutar **Kernel → Restart & Run All**. Al terminar quedan los gráficos en `graficos/`.
+Compara los conteos de las tablas de SQL Server con el origen y guarda el resultado en `sql/reconciliacion.csv`. En el archivo de reconciliación analizado, **15 de 16 tablas coinciden**; `pago` presenta **5 registros menos en SQL Server** (16.044 frente a 16.049 en origen). Esta diferencia se mantiene documentada y pendiente de explicación.
 
-### Actividad 4 · Pipeline ETL
-```bash
-python pipeline/pipeline_tp2.py                    # corrida normal: carga TP2_MorosidadPorCliente
-python pipeline/pipeline_tp2.py --desde 2005-01-01 # solo alquileres desde esa fecha
-python pipeline/pipeline_tp2.py --simulacion       # ejecuta todo menos escribir en la base
+### Actividades 1, 2 y 3 — Notebook
+
+Abrir `notebooks/analisis.ipynb` en VS Code o Jupyter y seleccionar el kernel del entorno virtual. Ejecutar **Restart & Run All** para reproducir los cálculos y exportar los gráficos a `graficos/`.
+
+Los archivos `notebooks/actividad_1.py`, `actividad_2.py` y `actividad_3.py` contienen versiones en script del desarrollo.
+
+### Actividad 4 — Pipeline ETL
+
+```powershell
+# Ejecución normal: escribe en SQL Server
+python pipeline/pipeline_tp2.py
+
+# Filtra alquileres desde una fecha determinada
+python pipeline/pipeline_tp2.py --desde 2005-01-01
+
+# Ejecuta las transformaciones sin cargar la tabla destino
+python pipeline/pipeline_tp2.py --simulacion
 ```
-Código de salida **0** si terminó bien y **1** si falló (la traza completa queda en `pipeline/logs/pipeline_tp2.log`).
 
-**Verificar la idempotencia:** ejecutar el pipeline dos veces seguidas y correr esta consulta en SSMS después de cada corrida; los tres valores deben ser idénticos.
-```sql
-SELECT COUNT(*)                  AS filas,
-       SUM(exposicion_reposicion) AS suma_exposicion,
-       CHECKSUM_AGG(CHECKSUM(*))  AS checksum_tabla
-FROM TP2_MorosidadPorCliente;
-```
+La ejecución registra sus etapas en consola y en `pipeline/logs/pipeline_tp2.log`. Según el comportamiento documentado, devuelve **código 0** cuando finaliza correctamente y **código distinto de 0** ante errores.
 
 ---
 
-## 7. Cómo está resuelto
+## 6. Diseño y decisiones metodológicas
 
-### 7.1 Portabilidad: `esquema.py`
-Es el **único lugar** del proyecto con nombres propios de la base (`alquiler`, `fecha_devolucion`, `id_cliente`…). El resto del código usa nombres canónicos de Sakila (`rental`, `return_date`, `customer_id`…) y los traduce a través del diccionario. Para correr el trabajo contra la base de otro equipo se cambia solo ese archivo y la variable `DB_NAME`.
+### Diccionario de esquema
 
-### 7.2 Consultas seguras
-Los **nombres** de tablas y columnas salen de `esquema.py`; los **valores variables** (por ejemplo la fecha mínima de alquiler) viajan siempre como parámetro (`params`), nunca concatenados en el texto de la consulta. El pipeline arma la consulta con SQLAlchemy Core, sin f-strings.
+`esquema.py` centraliza la traducción de nombres canónicos de Sakila a los nombres reales de SQL Server. Ejemplos:
 
-### 7.3 Qué se resuelve en SQL Server y qué en pandas
-- **SQL Server:** uniones entre las seis tablas del conjunto de trabajo, filtro por fecha y controles de integridad por conteo. El motor tiene índices y evita transferir filas que no se usan.
-- **pandas:** cálculo del atraso con datos censurados, cruce con el archivo plano, agregación por cliente y gráficos. Dependen de un valor global (la fecha de corte) y son análisis iterativos sobre un conjunto ya reducido.
+| Sakila | SQL Server |
+|---|---|
+| `rental` | `alquiler` |
+| `film` | `pelicula` |
+| `customer` | `cliente` |
+| `inventory` | `inventario` |
+| `rental_date` | `fecha_alquiler` |
+| `return_date` | `fecha_devolucion` |
 
-### 7.4 El conjunto de trabajo
-Una fila por **alquiler**: `rental` unido con `inventory`, `film`, `customer`, `film_category` y `category`. Las uniones hacia la categoría son `LEFT JOIN` para no perder alquileres de películas sin categoría. Está escrito en T-SQL en `sql/conjunto_trabajo.sql` (para probarlo a mano en SSMS) y armado desde `esquema.py` en el código.
+Esto facilita adaptar consultas sin modificar los nombres físicos en múltiples archivos. Los valores variables, como la fecha mínima, se pasan como **parámetros**, evitando concatenarlos en SQL.
 
-### 7.5 La decisión metodológica central: alquileres sin devolución
-Un alquiler sin `return_date` **no** es un error ni un atraso de 0 días: su atraso real **se desconoce**. Por eso se trata como **dato censurado**:
+### Conjunto de trabajo
 
-- **Fecha de corte** = último evento registrado en la base (no la fecha de hoy). Con la base del equipo es **2006-02-14 15:16:03**.
-- **Alquiler devuelto:** atraso = días entre alquiler y devolución − plazo pactado (`rental_duration`). Si es negativo (devolución anticipada) se informa como 0.
-- **Alquiler no devuelto:** el atraso es **al menos** (fecha de corte − fecha de alquiler − plazo pactado). Es una **cota inferior**, no un valor exacto.
+La extracción relaciona `rental`, `inventory`, `film`, `customer`, `film_category` y `category`. Las relaciones con categorías usan `LEFT JOIN` para conservar alquileres aunque falte una categoría asociada. La consulta de referencia está en `sql/conjunto_trabajo.sql`.
 
-El pipeline calcula el atraso promedio por cliente con **las dos decisiones** posibles sobre los no devueltos, para poder compararlas:
+### Tratamiento de alquileres sin devolución
 
-| Columna | Decisión | Sesgo |
-|---|---|---|
-| `atraso_prom_excluyendo` | **Excluir** los no devueltos | Subestima: solo describe a quienes ya devolvieron, y los peores casos son justamente los que todavía no volvieron. |
-| `atraso_prom_cota_minima` | **Imputar la cota mínima** a los no devueltos | También subestima, pero menos: el valor imputado es el mínimo posible. El resultado es un piso, no una estimación puntual. |
+Una fecha `return_date` nula **no equivale a cero días de atraso ni implica por sí sola un error**: el alquiler se considera *censurado a derecha*.
 
-### 7.6 Calidad de datos (Actividad 2)
-El notebook ejecuta el perfilado completo (forma, tipos, muestra, `info`, `describe`, nulos, duplicados por `rental_id`), un **control específico de la variante** (alquileres sin devolución, fechas de devolución anteriores al alquiler, plazos fuera de rango), atípicos con la regla del rango intercuartílico y un **control espejo** en T-SQL cuyos conteos se comparan con los de pandas. Cada transformación aplicada está justificada, y el pipeline reutiliza esa misma limpieza.
+- **Devueltos:** `max(0, días entre alquiler y devolución − duración pactada)`.
+- **No devueltos:** se calcula una **cota mínima** del atraso hasta una fecha de corte obtenida de los datos.
+- **Fecha de corte documentada:** `2006-02-14 15:16:03`.
+
+El pipeline conserva dos perspectivas: `atraso_prom_excluyendo` (solo devueltos) y `atraso_prom_cota_minima` (incluye la cota mínima para no devueltos). Ambas requieren interpretación: no representan la duración definitiva de los alquileres pendientes.
+
+### Calidad de datos
+
+Se analizan nulos, duplicados por `rental_id`, fechas de devolución anteriores al alquiler, plazos fuera de **1 a 30 días**, costos de reposición no positivos y valores atípicos mediante **IQR**. Los alquileres sin devolución se conservan; los casos imposibles se apartan y registran. Los outliers no se eliminan automáticamente si pueden ser casos reales de morosidad.
 
 ---
 
-## 8. Pipeline ETL
+## 7. Arquitectura del pipeline ETL
 
+```text
+SQL Server (alquileres) ──┐
+                          ├── EXTRAER ── TRANSFORMAR ── CARGAR
+CSV (multas/categoría) ──┘      │           │             │
+                                │           │             └── TP2_MorosidadPorCliente
+                                │           ├── limpieza y validaciones
+                                │           ├── merge por categoría
+                                │           ├── cálculo de atraso y censura
+                                │           └── agregación por cliente
+                                └── logging y control de errores
 ```
-EXTRAER                         TRANSFORMAR                          CARGAR
-SQL Server (alquileres)  ─┐     limpiar  →  fecha de corte      ┌─  DELETE + INSERT en una
-                          ├──►  merge con multas por categoría ─┤   única transacción sobre
-CSV multas por categoría ─┘     atraso con censura               └─  TP2_MorosidadPorCliente
-                                agregación por cliente
-```
 
-- **Orígenes:** (1) SQL Server, conjunto de trabajo; (2) `pipeline/datos/multas_por_categoria.csv`, archivo plano con la multa diaria (USD) por categoría. Las tarifas son **supuestos del equipo**, no datos de Sakila.
-- **Combinación:** `merge` por categoría con `validate="m:1"` (falla si el CSV repitiera una categoría). Las categorías sin tarifa usan 0,75 USD/día y quedan registradas con una advertencia.
-- **Limpieza:** se eliminan duplicados por `rental_id` y se apartan (y cuentan) los registros imposibles: devolución anterior al alquiler, plazo fuera de [1, 30] días y costo de reposición ≤ 0. Los alquileres sin devolución **no** se descartan.
-- **Funciones de responsabilidad única:** `extraer_alquileres` / `extraer_multas`, `limpiar` / `calcular_atraso` / `agregar_por_cliente` / `transformar`, `cargar`, y `ejecutar_pipeline` como orquestación.
-- **Registro (`logging`):** inicio y fin de cada etapa con la cantidad de filas procesadas, en consola y en `pipeline/logs/pipeline_tp2.log`. Si algo falla se registra con `log.exception` y el error se **vuelve a lanzar**, de modo que el proceso termina con código ≠ 0.
+**Dos orígenes:** SQL Server y `pipeline/datos/multas_por_categoria.csv`. El CSV contiene tarifas diarias de multa **supuestas por el equipo**, no importes reales de Sakila. El `merge` se realiza por categoría con validación `m:1`; para categorías sin tarifa se documenta una multa predeterminada de **USD 0,75 por día**.
 
-### Idempotencia
-Ejecutarlo una o diez veces deja la misma tabla. Lo aseguran tres decisiones de diseño:
-1. **`DELETE` + `INSERT` dentro de una sola transacción:** si la carga falla a mitad de camino se hace *rollback* y la tabla queda como estaba; nunca queda vacía ni a medias.
-2. **Clave primaria `id_cliente`:** si el borrado no se ejecutara, el `INSERT` fallaría en lugar de duplicar filas.
-3. **Salida determinista:** la fecha de corte se obtiene de los datos y no de la fecha de hoy, así que los mismos datos de entrada producen siempre el mismo resultado.
+**Idempotencia:** el pipeline realiza `DELETE + INSERT` dentro de una única transacción, utiliza `id_cliente` como clave primaria y obtiene una fecha de corte determinista a partir de los datos. Con entradas iguales, las ejecuciones deben producir la misma tabla. Ante una falla de carga, la transacción permite revertir cambios.
 
-### Tabla destino `TP2_MorosidadPorCliente` (una fila por cliente)
+### Tabla destino: `TP2_MorosidadPorCliente`
 
 | Columna | Descripción |
 |---|---|
 | `id_cliente` | Clave primaria |
-| `nombre`, `apellido` | Datos del cliente |
-| `total_alquileres` | Alquileres analizados del cliente |
-| `devueltos`, `no_devueltos` | Cuántos tienen / no tienen fecha de devolución |
-| `alquileres_morosos` | Alquileres con atraso > 0 (en los no devueltos, con mora mínima > 0) |
-| `tasa_morosidad_pct` | `alquileres_morosos / total_alquileres × 100` |
-| `atraso_prom_excluyendo` | Atraso promedio en días, excluyendo los no devueltos |
-| `atraso_prom_cota_minima` | Atraso promedio en días, imputando la cota mínima a los no devueltos |
-| `exposicion_reposicion` | Suma del costo de reposición (USD) de los alquileres no devueltos |
-| `multa_estimada` | Atraso en días × multa diaria de la categoría (USD) |
-| `fecha_corte` | Fecha de corte usada en el cálculo |
+| `nombre`, `apellido` | Identificación del cliente |
+| `total_alquileres` | Alquileres analizados |
+| `devueltos`, `no_devueltos` | Alquileres con y sin fecha de devolución |
+| `alquileres_morosos` | Alquileres con atraso positivo, según la metodología del pipeline |
+| `tasa_morosidad_pct` | Porcentaje de alquileres morosos |
+| `atraso_prom_excluyendo` | Atraso promedio de alquileres devueltos |
+| `atraso_prom_cota_minima` | Atraso promedio incluyendo la cota mínima de los pendientes |
+| `exposicion_reposicion` | Suma de costos de reposición de no devueltos (USD) |
+| `multa_estimada` | Estimación ilustrativa basada en las multas del CSV (USD) |
+| `fecha_corte` | Fecha de referencia de los cálculos |
 
-### Última ejecución registrada (`pipeline/logs/pipeline_tp2.log`)
-- 16.044 alquileres extraídos · 16 categorías en el archivo plano · 599 clientes.
-- 0 duplicados por `rental_id` y 0 registros apartados por reglas de negocio.
-- 183 alquileres sin devolución (censurados) · fecha de corte 2006-02-14 15:16:03.
-- Dos corridas completas consecutivas dejaron **599 filas** en `TP2_MorosidadPorCliente`.
+### Evidencia de ejecución documentada
+
+De acuerdo con el registro de ejecución compartido en la documentación del proyecto:
+
+| Indicador | Resultado |
+|---|---:|
+| Alquileres extraídos | **16.044** |
+| Categorías en el archivo plano | **16** |
+| Clientes procesados | **599** |
+| Alquileres sin devolución | **183** |
+| Duplicados por `rental_id` | **0** |
+| Registros apartados por reglas de negocio | **0** |
+| Filas en tabla destino tras dos ejecuciones | **599** |
+
+**Validación de idempotencia:** ejecutar el pipeline dos veces consecutivas y comparar, después de cada corrida, el resultado de esta consulta en SQL Server Management Studio (SSMS):
+
+```sql
+SELECT
+    COUNT(*) AS filas,
+    SUM(exposicion_reposicion) AS suma_exposicion,
+    CHECKSUM_AGG(CHECKSUM(*)) AS checksum_tabla
+FROM TP2_MorosidadPorCliente;
+```
+
+Los tres valores deben coincidir entre ambas corridas. El checksum funciona como control práctico, aunque no sustituye una comparación exhaustiva de todas las filas y columnas.
 
 ---
 
-## 9. Gráficos
+## 8. Visualizaciones y hallazgos
 
-El notebook exporta tres gráficos de tipos distintos en `graficos/` (PNG, 150 dpi):
+El notebook exporta tres gráficos PNG a **150 dpi**.
 
-| Archivo | Tipo | Qué muestra |
-|---|---|---|
-| `grafico_1_boxplot.png` | Diagramas de caja | Días de devolución respecto del plazo pactado, por categoría de película |
-| `grafico_2_narrativo.png` | Barras (una barra destacada y una anotación) | Los 10 clientes con más exposición por películas sin devolver |
-| `grafico_3_distribucion_morosidad.png` | Histograma | Distribución de la tasa de morosidad por cliente |
+### 8.1. Días de atraso por categoría
+
+![Distribución de días de atraso por categoría](sakila-data-analytics-tp2/graficos/grafico_1_boxplot.png)
+
+**Hallazgo:** entre los alquileres que presentan mora, las medianas de atraso por categoría son relativamente similares, aproximadamente entre **2 y 3 días**. No se identifica una categoría claramente dominante. Esto **no equivale** a comparar la probabilidad de mora de todas las categorías, porque el gráfico incluye solamente alquileres morosos.
+
+**Decisión posible:** evaluar recordatorios generales y estudiar tasas de mora por categoría antes de aplicar políticas diferenciadas.
+
+### 8.2. Exposición por películas no devueltas
+
+![Exposición económica por cliente](sakila-data-analytics-tp2/graficos/grafico_2_narrativo.png)
+
+**Hallazgo:** **Tammy Sanders** registra la mayor exposición individual entre los clientes representados, con **USD 68,97** en costos estimados de reposición. Esto representa exposición potencial, **no una pérdida definitiva**.
+
+**Decisión posible:** priorizar el seguimiento de alquileres pendientes según el valor económico expuesto.
+
+### 8.3. Distribución de la tasa de morosidad
+
+![Distribución de la tasa de morosidad](sakila-data-analytics-tp2/graficos/grafico_3_distribucion_morosidad.png)
+
+**Hallazgo:** el histograma muestra una concentración importante de clientes con tasas aproximadas entre **40 % y 65 %**, con un pico cercano al **50 %**. Las tasas deben interpretarse junto con el número de alquileres de cada cliente.
+
+**Decisión posible:** segmentar clientes según recurrencia de atraso, volumen de alquileres y exposición económica.
 
 ---
 
-## 10. Alcance y limitaciones del análisis
+## 9. Alcance y limitaciones
 
-- El atraso de los alquileres no devueltos es una **cota inferior**: el valor real es mayor o igual.
-- Con las columnas disponibles no se puede distinguir un alquiler "que todavía no volvió" de una "devolución no registrada"; el notebook acota la duda midiendo cuánto tiempo pasó hasta la fecha de corte.
-- La fecha de corte es el último evento registrado en la base, no la fecha actual.
-- Las multas por categoría son supuestos del equipo: `multa_estimada` es ilustrativa, no un ingreso real.
-- Las diferencias entre categorías son una **asociación**, no prueban causalidad.
+- La base representa un **conjunto histórico**: la fecha de corte se obtiene del último evento registrado, no de la fecha actual.
+- Los alquileres sin devolución son **observaciones censuradas**; su atraso final es desconocido.
+- La exposición por costo de reposición **no equivale a una pérdida confirmada**.
+- Las multas por categoría son **supuestos didácticos del equipo**, no cobros reales.
+- Los gráficos permiten detectar **asociaciones y patrones**, pero no demuestran causalidad.
+- La reconciliación detectó una diferencia de **cinco registros en `pago`**, pendiente de explicación.
+
+---
+
+## 10. Reproducibilidad y documentación
+
+Para reproducir el trabajo:
+
+1. Preparar SQL Server con Sakila migrada y configurar `DB_SERVER`, `DB_NAME` y `DB_DRIVER`.
+2. Crear el entorno virtual e instalar `requirements.txt`.
+3. Verificar la conexión con `python probar_conexion.py`.
+4. Ejecutar `python generar_reconciliacion.py`.
+5. Abrir `notebooks/analisis.ipynb` y ejecutar todas las celdas.
+6. Comprobar que exista `pipeline/datos/multas_por_categoria.csv` y ejecutar el ETL.
+7. Repetir el ETL y verificar la idempotencia en `TP2_MorosidadPorCliente`.
+
+La bitácora del equipo y las páginas de **Diccionario de esquema**, **Diagnóstico de calidad**, **Hallazgos** y **Dudas** complementan la documentación técnica.
+
+---
+
+**TP2 · Equipo 04 · Seminario de Actualización · 2026**  
+**Docente:** Jorge Insfrán  
+**Alumnos:** Lucas Valenzuela · Franco Amendolara · Diego Insua
